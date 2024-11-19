@@ -1,0 +1,136 @@
+---
+title: "TP_Titanic"
+author: "Naji"
+date: "2024-11-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## TP Titanic
+
+
+#Téléchargement du jeu de donnés
+```{r}
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+install.packages("carData")
+library(carData)
+library(TitanicPackage)
+View(TitanicSurvival)
+```
+
+#Statistiques descriptives:
+```{r}
+summary(TitanicSurvival)
+```
+# Description des donnés:
+Cette base de données représente certaines caractéristiques liées à la catastrophe du Titanic.
+-Variable survived : Variable qualitative qui indique si un individu a survécu à la catastrophe.
+Valeurs possibles : YES (oui) / NO (non).
+
+-Variable sexe : Variable catégorielle qui définit le sexe de l’individu.
+Valeurs possibles : MALE (homme) / FEMALE (femme).
+
+-Variable age : Variable quantitative qui indique l’âge de chaque individu de l’échantillon.
+
+-Variable passengerClasse : Variable qualitative qui indique la classe dans laquelle chaque individu était hébergé.
+Valeurs possibles : Première classe (1st), deuxième classe (2nd), et troisième classe (3rd).
+
+
+#Visualisation des survivants en fonction du sexe et classe:
+
+#Graphique de la representation des survivants par sexe:
+```{r}
+library(ggplot2)
+graph_sexe <- ggplot(data = TitanicSurvival, aes(x=TitanicSurvival$survived,
+                                                 fill=TitanicSurvival$sex)) +
+  geom_bar()
+graph_sexe
+```
+# Graphique de la presentation des survivants par classe:
+```{r}
+graph_classe <- ggplot(data = TitanicSurvival, aes(x=TitanicSurvival$survived,
+                                                 fill=TitanicSurvival$passengerClass)) +
+  geom_bar()
+graph_classe
+```
+
+# Representation des survivants par rapport à leur age:
+
+```{r}
+library(ggplot2)
+graph_age <- ggplot(data = TitanicSurvival, aes(x = age, fill = survived)) +
+             geom_boxplot() +
+             labs(x = "Age", y = "Nombre", title = "Survivants en fonction de l'age", fill = "Survivants") +
+             theme_minimal()
+graph_age
+
+ggplot(TitanicSurvival, aes(x = age, fill = factor(survived))) +
+  geom_density(alpha = 0.8) +
+  labs(x = "Age (ans)", y = "Densité", fill = "Survivant") +
+  scale_fill_manual(values = c("pink", "grey"), labels = c("Non", "Oui")) +
+  theme_minimal()
+
+```
+```{r}
+graph_age_2 <- ggplot(data = TitanicSurvival, aes(survived,age)) +
+  geom_boxplot() +
+  theme_minimal()
+graph_age_2
+```
+```{r}
+y<-as.numeric(TitanicSurvival$survived)-1
+summary(glm(y~age+sex+passengerClass , data=TitanicSurvival,family = binomial(link = "logit")))
+```
+# Interprétation des résultats:
+
+INTERPRETION DES STATISTIQUES DESCRIPTIVES:
+Ces statistiques montrent que la majorité des passagers étaient en 3ème classe et que l'âge moyen des passagers était d'environ 30 ans. Il est également notable que 263 valeurs manquantes existent pour l'âge.
+
+INTERPRETATION SUR LES GRAPHIQUES:
+graph_sexe : Ce graphique montre que la majorité des hommes n'ont pas survécu au naufrage du Titanic, tandis qu'une proportion significative de femmes ont survécu. Les femmes semblent avoir eu un taux de survie plus élevé que les hommes.
+
+graph_classe : Ce graphique montre que les passagers de 3e classe ont le plus grand nombre de décès, tandis que les passagers de 1re classe ont un taux de survie plus élevé. La survie semble diminuer avec la classe des passagers.
+
+graph_age et graph_age_2 : Ce graphique de densité montre que les enfants et les jeunes adultes (moins de 20 ans) avaient une probabilité plus élevée de survie. À partir de 30 ans, les courbes se chevauchent davantage, indiquant une probabilité similaire entre survivants et non-survivants dans ces tranches d’âge.
+
+INTERPRETATION DU MODELE DE REGRESSION:
+
+-Âge (-0,0344) : Chaque année supplémentaire réduit la probabilité de survie. Cet effet est significatif (p < 0,001).
+
+-Sexe masculin (-2,4978) : Être un homme diminue fortement la probabilité de survie par rapport aux femmes. Cet effet est très significatif (p < 0,001).
+
+-Classe de passager :
+
+2ème classe (-1,2806) : Probabilité de survie inférieure par rapport à la 1ère classe. Significatif (p < 0,001).
+3ème classe (-2,2897) : Probabilité de survie encore plus faible que la 1ère classe. Très significatif (p < 0,001).
+
+# Ajout des fonctions d'analyse:
+
+```{r}
+taux_survie_class(TitanicSurvival)
+```
+
+```{r}
+taux_survie_sex(TitanicSurvival)
+
+```
+
+INTERPRETATION DES TAUXS: 
+
+Les résultats des taux de survie par classe montrent des différences marquées :
+
+1ère classe (62%) : Le taux de survie le plus élevé, probablement en raison d'un meilleur accès aux canots de sauvetage et à des conditions de voyage privilégiées.
+
+2ème classe (43%) : Un taux de survie modéré, les passagers ayant eu un accès limité aux ressources de sauvetage.
+
+3ème classe (26%) : Le taux de survie le plus bas, en raison de l'emplacement des passagers dans les zones inférieures du navire et d'un accès restreint aux canots de sauvetage.
+
+
+Les résultats des taux de survie selon le sexe montrent une différence significative :
+
+Femmes (72.7%) : Le taux de survie des femmes est nettement plus élevé, ce qui peut être dû à des priorités données aux femmes et enfants lors de l'évacuation.
+
+Hommes (19.1%) : Le taux de survie des hommes est beaucoup plus faible, reflétant probablement la politique de sauvetage qui favorisait les femmes et enfants.
